@@ -24,7 +24,11 @@
             :page="page"
             @reloadPage="pageReload++"
           )
-          addressBlock(:singleStudio="singleStudio")
+          addressBlock(
+            :singleStudio="singleStudio"
+            :isRequired="isRequired"
+            @hInput="hInput"
+          )
           services(:singleStudio="singleStudio")
           equipment(:singleStudio="singleStudio")
           rooms(:rooms="rooms")

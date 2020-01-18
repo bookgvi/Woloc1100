@@ -4,15 +4,14 @@
       span.text-red *
     .row.q-pb-lg
       .col-8.q-pr-sm
-        q-select(
+        q-select.q-pb-sm(
           class="address"
-          v-model="singleStudio.address"
+          :value="form.address"
           :options="fullAddressArr"
+          :error="$v.form.address.$error"
           @input.native="getFullAddress($event)"
           @keyup.native.enter="showOnMap"
           @filter="emptyFilter"
-          :rules="[val => !!val || '* Обязательно для заполнения']"
-          lazy-rules
           use-input
           fill-input
           display-value
@@ -22,6 +21,7 @@
           template(v-slot:no-option)
             q-item
               q-item-section.text-grey No results
+        div(v-if="$v.form.address.$invalid && $v.form.address.$dirty" class="error") * - Поле обязательно для заполнения
       .col-4.q-pl-sm
         q-btn.block(label="Показать на карте" @click="showOnMap")
     .row.q-pb-lg
@@ -73,13 +73,19 @@
 <script>
 import axios from 'axios'
 import { yandexMap, ymapMarker } from 'vue-yandex-maps'
+import { required } from 'vuelidate/lib/validators'
+
 export default {
   props: {
-    singleStudio: Object
+    singleStudio: Object,
+    isRequired: Number
   },
   components: { yandexMap, ymapMarker },
   data () {
     return {
+      form: {
+        address: ''
+      },
       isMarker: false,
       defaultAddress: 'г Москва, ул Кремль',
       fullAddressArr: [],
@@ -94,15 +100,33 @@ export default {
       instAuto: ''
     }
   },
+  validations: {
+    form: {
+      address: { required }
+    }
+  },
+  watch: {
+    'isRequiredVM' (newVal) {
+      this.$v.form.$touch()
+    }
+  },
   computed: {
+    isRequiredVM () {
+      return this.isRequired
+    },
     markerCoords () {
       this.showOnMap()
       return [this.singleStudio.lat, this.singleStudio.lon]
     }
   },
+  mounted () {
+    this.form.address = this.singleStudio.address
+  },
   methods: {
     async getFullAddress (e) {
-      this.singleStudio.address = e.target.value
+      this.form.address = e.target.value
+      this.$emit('hInput', this.form.address, 'address')
+      this.$v.form.$touch()
       await axios.post('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address', {
         count: 5,
         query: e.target.value,
@@ -123,7 +147,7 @@ export default {
         params: {
           apikey: this.options.yaMap.yAPI,
           format: 'json',
-          geocode: this.singleStudio.address || this.defaultAddress
+          geocode: this.form.address || this.defaultAddress
         }
       })
       this.singleStudio.lon = +data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ')[0]
@@ -143,7 +167,10 @@ export default {
         headers: {
           Authorization: `Token ${this.options.token}`
         }
-      }).then(resp => { this.singleStudio.address = resp.data.suggestions[0].value })
+      }).then(resp => {
+        this.form.address = resp.data.suggestions[0].value
+        this.$emit('hInput', this.form.address, 'address')
+      })
         .catch(err => { console.error('Catched...', err) })
       this.isMarker = true
     },

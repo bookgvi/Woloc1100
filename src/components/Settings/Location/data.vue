@@ -5,44 +5,44 @@
       .col
         span Название &nbsp
         span.text-red *
-        q-input.q-pt-sm(
-          class="name"
-          v-model="singleStudio.name"
+        q-input.q-py-sm(
+          :value="form.name"
+          :error="$v.form.name.$error"
+          @input.native="util.hInput($event, 'name')"
           placeholder="Название студии"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
           outlined
           dense
         )
+        div(v-if="$v.form.name.$invalid && $v.form.name.$dirty" class="error") * - Поле обязательно для заполнения
     .row.q-pb-lg
       .col.q-pr-sm
         span Телефон &nbsp
         span.text-red *
-        q-input.q-pt-sm(
-          class="phone"
-          v-model="singleStudio.phone"
+        q-input.q-py-sm(
+          :value="form.phone"
+          :error="$v.form.phone.$error"
+          @input.native="util.hInput($event, 'phone')"
           placeholder="+7 (800) 800 0123"
           mask="+# (###) ### ####"
           unmasked-value
           type="tel"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
           outlined
           dense
         )
+        div(v-if="$v.form.phone.$invalid && $v.form.phone.$dirty" class="error") * - Поле обязательно для заполнения
       .col
         span Эл. почта &nbsp
         span.text-red *
-        q-input.q-pt-sm(
-          class="email"
-          v-model="singleStudio.email"
-          placeholder="email@doamin.com"
+        q-input.q-py-sm(
+          :value="form.email"
+          :error="$v.form.email.$error"
+          @input.native="util.hInput($event, 'email')"
+          placeholder="email@domain.com"
           type="email"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
           outlined
           dense
         )
+        div(v-if="$v.form.email.$invalid && $v.form.email.$dirty" class="error") * - Поле обязательно для заполнения
     .row.q-pb-sm
       q-checkbox(v-model="singleStudio.hidden" label="Скрыть локацию" dense)
     .row
@@ -50,10 +50,45 @@
 </template>
 
 <script>
+import { Util } from '../Helper/utils'
+import { required } from 'vuelidate/lib/validators'
+
 export default {
-  name: 'datas',
   props: {
-    singleStudio: Object
+    singleStudio: Object,
+    isRequired: Number
+  },
+  data () {
+    return {
+      util: new Util(this),
+      form: {
+        name: '',
+        phone: '',
+        email: ''
+      }
+    }
+  },
+  validations: {
+    form: {
+      name: { required },
+      phone: { required },
+      email: { required }
+    }
+  },
+  watch: {
+    'isRequiredVM' (newVal) {
+      this.$v.form.$touch()
+    }
+  },
+  computed: {
+    isRequiredVM () {
+      return this.isRequired
+    }
+  },
+  mounted () {
+    this.form.name = this.singleStudio.name
+    this.form.phone = this.singleStudio.phone
+    this.form.email = this.singleStudio.email
   }
 }
 </script>

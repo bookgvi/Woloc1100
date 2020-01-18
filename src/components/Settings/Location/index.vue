@@ -1,48 +1,93 @@
 <template lang="pug">
-  .settings(:key="pageReload")
-    q-tab-panels(v-model="currentTab")
-      q-tab-panel.q-pa-none(name="Локация")
-        location(
-          :key="studioID"
-          :singleStudio="singleStudio"
-          :rooms="rooms"
-          :isSave="isSave"
-          @updateStudio="updateStudio"
-          @newStudio="newStudio"
-          @createNewStudio="createNewStudio"
-          @reloadPage="pageReload++"
-        )
+  .location
+    .menu.menu--menu2
+      filters-list(name="settings")
+        template(#prepend="props")
+          studio-filter(v-bind="props")
+        template(#append)
+          q-btn.q-btn--no-uppercase(label="Добавить локацию" dense color="primary" @click="newStudio")
+    .content(:key="pageReload")
+      .row.justify-center.q-pb-md
+        .col-6
+          dataBlock(
+            :singleStudio="singleStudio"
+            :isRequired="isRequired"
+            @hInput="hInput"
+          )
+          specifications(:singleStudio="singleStudio")
+          images(
+            :imgData="singleStudio"
+            :page="page"
+            @reloadPage="pageReload++"
+          )
+          addressBlock(:singleStudio="singleStudio")
+          services(:singleStudio="singleStudio")
+          equipment(:singleStudio="singleStudio")
+          rooms(:rooms="rooms")
+          .row.col-12.justify-center.q-pt-md
+            .col-6.q-pr-sm
+              q-btn.fit.bg-primary.text-white(
+                label="Сохранить"
+                no-caps
+                @click="updateStudio"
+              )
+            .col-6.q-pl-sm
+              q-btn.fit(
+                label="Сохранить и создать зал"
+                no-caps
+                @click="createNewStudio"
+              )
 </template>
 
 <script>
-import location from './main'
+import dataBlock from './data'
+import specifications from './specifications'
+import images from '../Images/index'
+import addressBlock from './address'
+import services from './services'
+import equipment from './equipment'
+import rooms from './rooms'
+import StudioFilter from '../../Filters/StudioFilter'
+import FiltersList from '../../Filters/FiltersList'
 import { Util } from '../Helper/utils'
-import { showNotif } from '../../../utils/helpers'
 
 const emptyLocation = new Util()
 const util = new Util()
 export default {
   name: 'setting',
   components: {
-    location
+    dataBlock,
+    specifications,
+    images,
+    addressBlock,
+    services,
+    equipment,
+    rooms,
+    StudioFilter,
+    FiltersList
   },
   data () {
     return {
+      page: 'studios',
       pageReload: 0,
       id: this.$app.filters.getValues('settings').studio,
       currentTab: 'Локация',
       tabs: ['Локация'],
       singleStudio: {},
       currentStudio: '',
-      isSave: false,
       rooms: [],
-      requiredFields: ['name', 'phone', 'limit', 'email', 'height', 'yardage', 'address']
+      requiredFields: ['name', 'phone', 'limit', 'email', 'height', 'yardage', 'address'],
+      isRequired: 0
+    }
+  },
+  watch: {
+    async filterChanged () {
+      await this.singleStudioM()
     }
   },
   computed: {
-    studioID () {
-      this.singleStudioM()
-      return this.$app.filters.getValues('settings').studio
+    filterChanged () {
+      return this.$app.filters.getValues('settings')
     }
   },
   mounted () {
@@ -54,20 +99,19 @@ export default {
     * Метод получения данных локации, установленной в фильтре
     * */
     async singleStudioM () {
-      this.isSave = false // ----------------------------- Сбрасываем поле для метода POST
       let filter = await this.$app.filters.getValues('settings')
       if (!filter.studio) return
       if (!this.singleStudio) return
       this.rooms = this.$app.rooms.getFiltered(filter)
       if (!this.rooms) return
       this.singleStudio = await this.$app.studios.getOne(filter.studio)
+      this.pageReload++
     },
     /*
     *
     * Метод для подготовки payload-объекта для создания локации
     * */
     async newStudio () {
-      this.isSave = true
       this.rooms = []
       const services = emptyLocation.clearExtras(emptyLocation.cloneObject(this.singleStudio.services))
       const facilities = emptyLocation.clearExtras(emptyLocation.cloneObject(this.singleStudio.facilities))
@@ -78,26 +122,22 @@ export default {
         facilities,
         images: []
       }
+      this.pageReload++
+    },
+    hInput (value, field) {
+      this.singleStudio[field] = value
     },
     /*
     *
     * Обработка кнопки Сохранить
     */
-    async updateStudio (services, vendors) {
-      const isRequired = util.hasRequiredFields(this.requiredFields, this.singleStudio)
-      if (isRequired.length) {
-        console.warn('Заполните обязательные поля')
-        showNotif('Заполните обязательные поля')
-        this.requiredFields.forEach(item => {
-          util.highLightRequired(item)
-        })
-        return
-      }
+    async updateStudio () {
+      this.isRequired++
       let newStudioId = ''
       /*
       * Метод POST
       * */
-      if (this.isSave || (this.singleStudio.hasOwnProperty('id') && !this.singleStudio.id)) {
+      if ((this.singleStudio.hasOwnProperty('id') && !this.singleStudio.id) || !this.singleStudio.hasOwnProperty('id')) {
         newStudioId = await this.$app.studios.addNew(this.singleStudio).then(({ data }) => {
           if (data) return data.id
         })
@@ -122,19 +162,11 @@ export default {
     * Обработка кнопки Сохранить и создать зал
     * */
     async createNewStudio () {
-      const isRequired = util.hasRequiredFields(this.requiredFields, this.singleStudio)
-      if (isRequired.length) {
-        console.warn('Заполните обязательные поля')
-        showNotif('Заполните обязательные поля')
-        this.requiredFields.forEach(item => {
-          util.highLightRequired(item)
-        })
-        return
-      }
+      this.isRequired++
       /*
       * Метод POST
       * */
-      if (this.isSave) {
+      if ((this.singleStudio.hasOwnProperty('id') && !this.singleStudio.id) || !this.singleStudio.hasOwnProperty('id')) {
         this.$app.studios.addNew(this.singleStudio).then(this.resultPutPostPushToRoom)
       /*
       * Метод PUT
@@ -158,7 +190,6 @@ export default {
           util.highLightRequired(item.source)
         })
       } else if (data) {
-        this.isSave = false
         await this.$app.filters.setValue('settings', 'studio', data.id)
         this.$router.push({ path: '/settings/room', query: { createRoom: true } })
       }
@@ -166,3 +197,9 @@ export default {
   }
 }
 </script>
+
+<style>
+  .error {
+    color: red;
+  }
+</style>

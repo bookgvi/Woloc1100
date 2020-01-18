@@ -1,5 +1,5 @@
 <template lang="pug">
-  .roomData(:key="reloadFields")
+  .roomData
     .row.q-pb-lg
       .col
         .text-h6 Данные зала
@@ -14,11 +14,11 @@
         q-input.q-pt-sm.q-pb-xs(
           :value="form.name"
           :error="$v.form.name.$error"
-          @input.native="hInput($event, 'name')"
+          @input.native="util.hInput($event, 'name')"
           outlined
           dense
         )
-        div(v-if="$v.form.name.$invalid" class="error") * - Поле обязательно для заполнения
+        div(v-if="$v.form.name.$invalid && $v.form.name.$dirty" class="error") * - Поле обязательно для заполнения
     .row.q-pb-md
       span Цвет зала в календаре
     .row.items-center.q-pb-md
@@ -55,11 +55,11 @@
         q-input.q-pb-xs(
           :value="form.minHours"
           :error="$v.form.minHours.$error"
-          @input.native="hInput($event, 'minHours')"
+          @input.native="util.hInput($event, 'minHours')"
           outlined
           dense
         )
-        div(v-if="$v.form.minHours.$invalid" class="error") * - Поле обязательно для заполнения
+        div(v-if="$v.form.minHours.$invalid && $v.form.minHours.$dirty" class="error") * - Поле обязательно для заполнения
     .row.q-pb-md
       span Опубликован и доступен для бронирования
     .row.q-pb-lg
@@ -73,6 +73,8 @@
 
 <script>
 import { required } from 'vuelidate/lib/validators'
+import { Util } from '../Helper/utils'
+
 export default {
   name: 'roomData',
   props: {
@@ -84,20 +86,22 @@ export default {
     },
     isRequired: Number
   },
-  data: () => ({
-    form: {
-      name: '',
-      minHours: ''
-    },
-    currentStudioName: '',
-    roomStatusData: 'Открыт',
-    statuses: ['Скрыт', 'Открыт', 'Закрыт'],
-    currentRoomTypeData: 'Рабочий',
-    roomType: ['Гримерка или подсобка', 'Рабочий'],
-    currentPrepay: 'На выбор клиента',
-    prepay: ['Без предоплаты', 'На выбор клиента'],
-    reloadFields: 0
-  }),
+  data () {
+    return {
+      util: new Util(this),
+      form: {
+        name: '',
+        minHours: ''
+      },
+      currentStudioName: '',
+      roomStatusData: 'Открыт',
+      statuses: ['Скрыт', 'Открыт', 'Закрыт'],
+      currentRoomTypeData: 'Рабочий',
+      roomType: ['Гримерка или подсобка', 'Рабочий'],
+      currentPrepay: 'На выбор клиента',
+      prepay: ['Без предоплаты', 'На выбор клиента'],
+    }
+  },
   watch: {
     'isRequiredVM' (newVal) {
       this.$v.form.$touch()
@@ -168,18 +172,7 @@ export default {
       this.roomStatusData = this.statuses[this.roomData.status]
       this.currentRoomTypeData = this.roomType[this.roomData.isRoom]
       this.currentPrepay = this.prepay[this.roomData.needPrepayment]
-    },
-    hInput (e, field) {
-      this.form[field] = e.target.value
-      this.$v.form[field].$touch()
-      this.$emit('hInput', this.form[field])
     }
   }
 }
 </script>
-
-<style scoped>
-  .error {
-    color: red;
-  }
-</style>

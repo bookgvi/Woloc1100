@@ -1,4 +1,5 @@
-export function Util () {
+export function Util (self) {
+  this.self = self
 }
 Util.prototype = {
   clearExtras (payload) {
@@ -39,6 +40,14 @@ Util.prototype = {
     const field = document.querySelector(`.${fieldClass} input`)
     field.focus()
     field.blur()
+  },
+  /*
+  * Метод для обработки поля Input.native c валидацией
+  * */
+  hInput (e, field) {
+    this.self.form[field] = e.target.value
+    this.self.$v.form[field].$touch()
+    this.self.$emit('hInput', this.self.form[field])
   }
 }
 

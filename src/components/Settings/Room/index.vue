@@ -285,3 +285,9 @@ export default {
   }
 }
 </script>
+
+<style>
+  .error {
+    color: red;
+  }
+</style>

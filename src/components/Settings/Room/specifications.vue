@@ -12,37 +12,40 @@
             rows=5
             style="width: 100%;"
           )
-    .row.q-pb-lg(:key="reloadFields")
+    .row.q-pb-lg
       .col.q-pr-sm
         span Высота потолков, м&nbsp;
         span.text-red *
-        q-input(
-          class="height"
-          v-model="specification.height"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
+        q-input.q-pb-xs(
+          :value="form.height"
+          :error="$v.form.height.$error"
+          @input.native="inputM"
           outlined
           dense
         )
+        div(v-if="$v.form.height.$invalid && $v.form.height.$dirty" class="error") * - Поле обязательно для заполнения
       .col
         span(style="line-height: 0;") Площадь, м
           sup 2
         span &nbsp;
         span.text-red *
-        q-input(
-          class="yardage"
-          v-model="specification.yardage"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
+        q-input.q-pb-xs(
+          :value="form.yardage"
+          :error="$v.form.yardage.$error"
+          @input.native="util.hInput($event, 'yardage')"
           outlined
           dense
         )
+        div(v-if="$v.form.yardage.$invalid && $v.form.yardage.$dirty" class="error") * - Поле обязательно для заполнения
     abstract-list(:dataArray="specification.characteristics")
 
 </template>
 
 <script>
 import AbstractList from './AbstractDataList/abstractList'
+import { required } from 'vuelidate/lib/validators'
+import { Util } from '../Helper/utils'
+
 export default {
   name: 'specifications',
   components: { AbstractList },
@@ -52,23 +55,34 @@ export default {
     },
     isRequired: Number
   },
-  data: () => ({
-    itemsCount: 6,
-    roomHeight: 0,
-    roomYardage: 0,
-    roomDescription: '',
-    isCharacteristics: true,
-    reloadFields: 0
-  }),
+  data () {
+    return {
+      util: new Util(this),
+      form: {
+        height: '',
+        yardage: ''
+      }
+    }
+  },
   watch: {
-    'isRequired' (newVal) {
-      if (newVal) this.reloadFields++
+    'isRequiredVM' (newVal) {
+      this.$v.form.$touch()
+    }
+  },
+  validations: {
+    form: {
+      height: { required },
+      yardage: { required }
+    }
+  },
+  computed: {
+    isRequiredVM () {
+      return this.isRequired
     }
   },
   created () {
-    this.roomHeight = this.height
-    this.roomYardage = this.yardage
-    this.roomDescription = this.description
+    this.form.height = this.specification.height
+    this.form.yardage = this.specification.yardage
   }
 }
 </script>

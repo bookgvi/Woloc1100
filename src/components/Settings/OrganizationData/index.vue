@@ -1,5 +1,5 @@
 <template lang="pug">
-  .organization()
+  form.organization(@submit.prevent="saveChanges")
     .row.justify-center(:key="reloadPage")
       .col-6
         .row.q-py-lg
@@ -169,7 +169,7 @@
                   q-icon(name="edit" style="font-size: 20px;")
         .row.q-py-lg
           .col.q-pr-sm
-            q-btn.bg-primary.text-white(label="Сохранить" no-caps style="width: 100%;" @click="saveChanges")
+            q-btn.bg-primary.text-white(label="Сохранить" type="submit" no-caps style="width: 100%;")
           //.col
             q-btn(label="Добавить сотрудника" no-caps style="width: 100%;")
       //q-dialog(v-model="isModal")
@@ -209,12 +209,7 @@ export default {
     },
     async saveChanges () {
       const result = await this.$app.organization.updateOne({ id: this.organization.id, data: this.organization })
-      if (result.hasOwnProperty('data') && result.data.hasOwnProperty('organization')) {
-        showNotif('Изменения сохранены', 'green')
-        this.extra = result.data.extra
-        this.organization = result.data.organization
-        this.reloadPage++
-      } else if (result.hasOwnProperty('errors')) {
+      if (result.hasOwnProperty('errors')) {
         showNotif('Проверьте обязательные поля')
       }
     },

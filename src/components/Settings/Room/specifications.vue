@@ -19,7 +19,7 @@
         q-input.q-pb-xs(
           :value="form.height"
           :error="$v.form.height.$error"
-          @input.native="inputM"
+          @input.native="util.hInput($event, 'height')"
           outlined
           dense
         )

@@ -47,7 +47,7 @@ Util.prototype = {
   hInput (e, field) {
     this.self.form[field] = e.target.value
     this.self.$v.form[field].$touch()
-    this.self.$emit('hInput', this.self.form[field])
+    this.self.$emit('hInput', this.self.form[field], field)
   }
 }
 

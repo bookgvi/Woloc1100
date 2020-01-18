@@ -11,14 +11,15 @@
         .col-3.bg-white
           room-list(
             :rooms="rooms"
-            @setCurrentRoom="setCurrentRoom"
             :selectedRoom="selectedRoom.id"
+            @setCurrentRoom="setCurrentRoom"
           )
         .col-6
           roomData(
             :currentStudio="currentStudio"
             :roomData="currentRoomData"
             :isRequired="isRequired"
+            @hInput="hInput"
           )
           Google(
             :roomData="currentRoomData"
@@ -26,6 +27,7 @@
           specifications(
             :specification="currentRoomData"
             :isRequired="isRequired"
+            @hInput="hInput"
           )
           payment(
             :payment="currentRoomData.payment"
@@ -85,7 +87,6 @@ export default {
       defaultStudio: {},
       defaultRooms: {},
       roomDataDefault: {},
-      isPost: false,
       reloadData: 0,
       currentStudio: {},
       rooms: [],
@@ -160,7 +161,7 @@ export default {
       if (!filter || !filter.studio) return
       this.currentStudio = await this.$app.studios.getFiltered(filter)
       if (!this.currentStudio) return
-      this.rooms = this.$app.rooms.getFiltered(filter)
+      this.rooms = this.currentStudio.rooms
       if (!this.rooms) return
       this.selectedRoom = this.rooms.length ? this.rooms[0] : {}
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
@@ -168,7 +169,6 @@ export default {
         this.defaultRooms = this.rooms
         this.roomDataDefault = this.saveDefaultData(this.currentRoomData)
       }
-      this.isPost = false
       this.reloadData++
     },
     async setCurrentRoom (room) {
@@ -178,7 +178,6 @@ export default {
       }
       this.defaultRooms = this.rooms
       this.roomDataDefault = this.saveDefaultData(this.currentRoomData)
-      this.isPost = false
       this.reloadData++
     },
     async getRoomData (id) {
@@ -215,22 +214,23 @@ export default {
         },
         images: []
       }
-      this.isPost = true
       this.createRoomAfterLocation = false
       this.reloadData++
+    },
+    hInput (value, field) {
+      this.currentRoomData[field] = value
     },
     async saveChanges () {
       this.isRequired++
       /*
       * POST method
       * */
-      if (this.isPost || (this.currentRoomData.hasOwnProperty('id') && !this.currentRoomData.id)) {
+      if ((this.currentRoomData.hasOwnProperty('id') && !this.currentRoomData.id) || !this.currentRoomData.hasOwnProperty('id')) {
         const rooms = await this.$app.room.addNew(this.currentRoomData).then(this.resultPutPost)
         if (!rooms) return
         this.rooms = rooms
         const newRoom = this.rooms.filter(item => item.name === this.currentRoomData.name)[0]
         this.setCurrentRoom(newRoom) // Выбираем новосозданный зал в списке
-        this.isPost = false
         /*
         * PUT method
         * */

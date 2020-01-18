@@ -76,7 +76,7 @@ import { room } from '../../../api/room'
 import { Util } from '../Helper/utils'
 
 const emptyRoom = new Util()
-const util = new Util()
+// const util = new Util()
 export default {
   data () {
     return {
@@ -91,7 +91,7 @@ export default {
       rooms: [],
       selectedRoom: {},
       currentRoomData: {},
-      isRequired: false,
+      isRequired: 0,
       isSomethingChanged: false,
       isLeavePageDialog: false,
       routerTo: '',
@@ -116,7 +116,6 @@ export default {
     async filterChanged () {
       await this.getStudioAndRoom()
       if (this.createRoomAfterLocation) {
-        console.log('QQQ')
         this.createNew()
       }
     }
@@ -156,7 +155,7 @@ export default {
   },
   methods: {
     async getStudioAndRoom () {
-      // this.currentRoomData = {} // TODO - попытаться выяснить зачем эта строка
+      // this.currentRoomData = {}
       let filter = this.$app.filters.getValues('settings')
       if (!filter || !filter.studio) return
       this.currentStudio = await this.$app.studios.getFiltered(filter)
@@ -218,9 +217,10 @@ export default {
       }
       this.isPost = true
       this.createRoomAfterLocation = false
-      // this.reloadData++
+      this.reloadData++
     },
     async saveChanges () {
+      this.isRequired++
       /*
       * POST method
       * */
@@ -247,11 +247,7 @@ export default {
     * then-функция обработки ответа от сервера POST/PUT
     * */
     resultPutPost ({ data, errors }) {
-      if (errors) {
-        errors.forEach(item => {
-          util.highLightRequired(item.source)
-        })
-      } else {
+      if (!errors) {
         return this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
       }
       return null

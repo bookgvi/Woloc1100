@@ -50,7 +50,7 @@ export default {
     specification: {
       type: Object
     },
-    isRequired: Boolean
+    isRequired: Number
   },
   data: () => ({
     itemsCount: 6,

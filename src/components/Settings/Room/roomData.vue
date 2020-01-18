@@ -1,5 +1,5 @@
 <template lang="pug">
-  .roomData
+  .roomData(:key="reloadFields")
     .row.q-pb-lg
       .col
         .text-h6 Данные зала
@@ -7,18 +7,18 @@
       .col
         span Локация
         q-input.q-pt-sm(v-model="currentStudioData" outlined dense disable)
-    .row.q-pb-lg(:key="reloadFields")
+    .row.q-pb-lg
       .col
         span Название зала&nbsp;
         span.text-red *
-        q-input.q-pt-sm(
-          class="name"
-          v-model="roomData.name"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
+        q-input.q-pt-sm.q-pb-xs(
+          :value="form.name"
+          :error="$v.form.name.$error"
+          @input.native="hInput($event, 'name')"
           outlined
           dense
         )
+        div(v-if="$v.form.name.$invalid" class="error") * - Поле обязательно для заполнения
     .row.q-pb-md
       span Цвет зала в календаре
     .row.items-center.q-pb-md
@@ -44,9 +44,6 @@
       .col-4.q-pr-sm
         span Тип зала
         q-select(
-          class="name"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
           v-model="currentRoomType"
           :options="roomType"
           outlined
@@ -55,18 +52,16 @@
       .col-4.q-pr-sm
         span Мин. кол-во часов&nbsp;
         span.text-red *
-        q-input(
-          class="minHours"
-          v-model="roomData.minHours"
-          :rules="[val => !!val || 'Обязательно для заполнения']"
-          lazy-rules
+        q-input.q-pb-xs(
+          :value="form.minHours"
+          :error="$v.form.minHours.$error"
+          @input.native="hInput($event, 'minHours')"
           outlined
           dense
         )
+        div(v-if="$v.form.minHours.$invalid" class="error") * - Поле обязательно для заполнения
     .row.q-pb-md
       span Опубликован и доступен для бронирования
-    // .row.q-pb-sm
-      span Предоплата
     .row.q-pb-lg
       .col
         q-checkbox(v-model="needPrepayment")
@@ -74,19 +69,10 @@
         .row
           span Включает 50% предоплату бронирования
 
-        // q-select(
-           class="needPrepayment"
-        // :rules="[val => !!val || 'Обязательно для заполнения']"
-         lazy-rules
-         v-model="needPrepayment"
-        // :options="prepay"
-         outlined
-         dense
-        // )
-
 </template>
 
 <script>
+import { required } from 'vuelidate/lib/validators'
 export default {
   name: 'roomData',
   props: {
@@ -95,9 +81,14 @@ export default {
     },
     roomData: {
       type: Object
-    }
+    },
+    isRequired: Number
   },
   data: () => ({
+    form: {
+      name: '',
+      minHours: ''
+    },
     currentStudioName: '',
     roomStatusData: 'Открыт',
     statuses: ['Скрыт', 'Открыт', 'Закрыт'],
@@ -108,8 +99,14 @@ export default {
     reloadFields: 0
   }),
   watch: {
-    'isRequired' (newVal) {
-      if (newVal) this.reloadFields++
+    'isRequiredVM' (newVal) {
+      this.$v.form.$touch()
+    }
+  },
+  validations: {
+    form: {
+      name: { required },
+      minHours: { required }
     }
   },
   computed: {
@@ -155,6 +152,9 @@ export default {
         val = val.split('#').pop()
         this.roomData.color = val
       }
+    },
+    isRequiredVM () {
+      return this.isRequired
     }
   },
   mounted () {
@@ -162,11 +162,24 @@ export default {
   },
   methods: {
     defaultValues () {
+      this.form.name = this.roomData.name
+      this.form.minHours = this.roomData.minHours
       this.currentStudioName = this.currentStudio.name
       this.roomStatusData = this.statuses[this.roomData.status]
       this.currentRoomTypeData = this.roomType[this.roomData.isRoom]
       this.currentPrepay = this.prepay[this.roomData.needPrepayment]
+    },
+    hInput (e, field) {
+      this.form[field] = e.target.value
+      this.$v.form[field].$touch()
+      this.$emit('hInput', this.form[field])
     }
   }
 }
 </script>
+
+<style scoped>
+  .error {
+    color: red;
+  }
+</style>

@@ -14,7 +14,11 @@
             :isRequired="isRequired"
             @hInput="hInput"
           )
-          specifications(:singleStudio="singleStudio")
+          specifications(
+            :singleStudio="singleStudio"
+            :isRequired="isRequired"
+            @hInput="hInput"
+          )
           images(
             :imgData="singleStudio"
             :page="page"

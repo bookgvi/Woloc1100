@@ -128,8 +128,8 @@ export default {
       const services = emptyLocation.clearExtras(emptyLocation.cloneObject(this.singleStudio.services))
       const facilities = emptyLocation.clearExtras(emptyLocation.cloneObject(this.singleStudio.facilities))
       this.singleStudio = {
-        lat: 55.786419,
-        lon: 37.725433,
+        lat: 55.751490781095335,
+        lon: 37.618877799781785,
         services,
         facilities,
         images: []

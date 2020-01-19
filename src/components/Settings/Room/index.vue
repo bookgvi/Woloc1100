@@ -202,6 +202,7 @@ export default {
       const { data } = JSON.parse(jsonData)
 
       this.currentRoomData = {
+        status: 1,
         isRoom: 1,
         needPrepayment: 1,
         interiors,
@@ -249,8 +250,10 @@ export default {
     resultPutPost ({ data, errors }) {
       if (!errors) {
         return this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
+      } else {
+        window.scrollTo(0, 0)
+        return null
       }
-      return null
     },
     leavePage () {
       this.isSomethingChanged = false

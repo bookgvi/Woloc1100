@@ -5,8 +5,8 @@
       .col
         span Описание локации
         textarea.q-pa-sm.text-grey-8(v-model="singleStudio.description" rows=5 style="width: 100%;")
-    .row.q-pb-sm.items-end
-      .col.q-pr-sm
+    .row.q-pb-sm
+      .col-4.q-pr-sm.q-pt-xs
         span Лимит, недели &nbsp
         span.text-red *
         q-input.q-pb-sm(
@@ -19,7 +19,7 @@
           dense
         )
         div(v-if="$v.form.limit.$invalid && $v.form.limit.$dirty" class="error") * - Поле обязательно для заполнения
-      .col.q-pr-sm
+      .col-4.q-pr-sm.q-pt-xs
         span Высота потолков, м &nbsp
         span.text-red *
         q-input.q-pb-sm(
@@ -32,7 +32,7 @@
           dense
         )
         div(v-if="$v.form.height.$invalid && $v.form.height.$dirty" class="error") * - Поле обязательно для заполнения
-      .col
+      .col-4
         span(style="line-height: 0;") Площадь,
         span.text-red * &nbsp
         span м

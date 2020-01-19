@@ -63,7 +63,6 @@ import FiltersList from '../../Filters/FiltersList'
 import { Util } from '../Helper/utils'
 
 const emptyLocation = new Util()
-const util = new Util()
 export default {
   name: 'setting',
   components: {
@@ -167,6 +166,8 @@ export default {
         this.$app.filters.setValue('settings', 'studio', newStudioId)
         this.singleStudioM()
         this.pageReload++
+      } else {
+        window.scrollTo(0, 0) // При ошибках скролл к началу страницы
       }
     },
     /*
@@ -196,14 +197,11 @@ export default {
     * then-функция для обработки кнопки Сохранить и создать зал
      */
     async resultPutPostPushToRoom ({ data, errors }) {
-      if (errors) {
-        errors.forEach(item => {
-          this.singleStudio[item.source] = ''
-          util.highLightRequired(item.source)
-        })
-      } else if (data) {
+      if (data) {
         await this.$app.filters.setValue('settings', 'studio', data.id)
         this.$router.push({ path: '/settings/room', query: { createRoom: true } })
+      } else {
+        window.scrollTo(0, 0) // При ошибках скролл к началу страницы
       }
     }
   }

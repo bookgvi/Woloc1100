@@ -41,7 +41,7 @@
       .col-4.q-pr-sm
         span Статус
         q-select(v-model="roomStatus" :options="statuses" outlined dense)
-      .col-4.q-pr-sm
+      .col-5.q-pr-sm
         span Тип зала
         q-select(
           v-model="currentRoomType"
@@ -49,7 +49,7 @@
           outlined
           dense
         )
-      .col-4.q-pr-sm
+      .col-3.q-pr-sm
         span Мин. кол-во часов&nbsp;
         span.text-red *
         q-input.q-pb-xs(

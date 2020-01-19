@@ -205,6 +205,7 @@ export default {
         status: 1,
         isRoom: 1,
         needPrepayment: 1,
+        color: '',
         interiors,
         backgrounds,
         extras,

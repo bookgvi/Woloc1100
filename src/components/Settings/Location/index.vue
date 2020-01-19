@@ -6,20 +6,23 @@
           studio-filter(v-bind="props")
         template(#append)
           q-btn.q-btn--no-uppercase(label="Добавить локацию" dense color="primary" @click="newStudio")
-    .content(:key="pageReload")
+    .content
       .row.justify-center.q-pb-md
         .col-6
           dataBlock(
+            :key="pageReload"
             :singleStudio="singleStudio"
             :isRequired="isRequired"
             @hInput="hInput"
           )
           specifications(
+            :key="pageReload + 1"
             :singleStudio="singleStudio"
             :isRequired="isRequired"
             @hInput="hInput"
           )
           images(
+            :key="pageReload + 2"
             :imgData="singleStudio"
             :page="page"
             @reloadPage="pageReload++"
@@ -107,10 +110,11 @@ export default {
     * Метод получения данных локации, установленной в фильтре
     * */
     async singleStudioM () {
-      let filter = await this.$app.filters.getValues('settings')
-      if (!filter.studio) return
-      if (!this.singleStudio) return
-      this.rooms = this.$app.rooms.getFiltered(filter)
+      let filter = this.$app.filters.getValues('settings')
+      if (!filter || !filter.studio) return
+      this.currentStudio = await this.$app.studios.getFiltered(filter)
+      if (!this.currentStudio) return
+      this.rooms = this.currentStudio.rooms
       if (!this.rooms) return
       this.singleStudio = await this.$app.studios.getOne(filter.studio)
       this.pageReload++
